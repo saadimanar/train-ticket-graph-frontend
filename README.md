@@ -1,53 +1,70 @@
 # train-ticket-graph-frontend
 
-A demo frontend for the service-graph query API
-([`train-ticket-graph-api`](../train-ticket-graph-api)). It draws the full
-service call graph and lets you explore the routes that match the backend's
-filters, such as routes that start at a public service, end in a database, or
-pass through a vulnerable service.
+**[Live demo](https://train-ticket-graph-frontend.vercel.app)** · **[Backend API](https://train-ticket-graph-api.vercel.app)** · **[Backend repo](https://github.com/saadimanar/train-ticket-graph-api)**
 
-## What it does
+A demo client for my Backslash backend home exercise, a query engine over the
+Train Ticket microservices graph. The
+[backend repo](https://github.com/saadimanar/train-ticket-graph-api) is the
+main deliverable; this app is a visual way to explore its API.
 
-- Draws the whole graph from `GET /graph` in a left-to-right layered layout,
-  with zoom, pan, fit-to-view and a minimap.
-- Builds the filter toggles from `GET /filters`. No filter name is hard-coded,
-  so a filter added to the backend appears here without a code change.
-- Calls `GET /routes` when filters or the All/Any match mode change, then
-  highlights the matching nodes and edges. Everything else is dimmed, not
-  removed, and highlighted edges are animated in the call direction.
-- Lists the matching routes with a count. Hover a route to preview it alone on
-  the graph; click to pin it and zoom to it.
-- Opens a details panel when you click a node: kind, exposure, vulnerabilities
-  (severity, message, file), callers and callees, and a note for placeholder
-  nodes.
-- Shows separate loading, backend-unreachable, API-error and "no routes match"
-  states. Zero routes (for example `public` + `sink` with match All) is a
-  neutral empty state, not an error.
+## Features
+
+- **Full graph view:** the whole service call graph from `GET /graph`, in a
+  left-to-right layered layout with zoom, pan, fit-to-view and a minimap.
+- **Dynamic filters:** the filter toggles are built from `GET /filters`, so a
+  filter added to the backend appears here without a frontend change.
+- **All / Any match mode:** routes must satisfy every selected filter, or any
+  one of them.
+- **Highlighted routes:** matching nodes and edges from `GET /routes` are
+  highlighted on the graph and the edges animate in the call direction.
+  Everything else is dimmed, not removed.
+- **Route list:** every matching route with a count. Hover a route to
+  highlight only that route; click to pin it and zoom to it.
+- **Node details panel:** click a node to see its kind, whether it is public,
+  its vulnerabilities (severity, message, file), its callers and callees, and
+  a note for missing placeholder nodes.
+- **Legend:** explains the node styles (service, public entry point, database,
+  queue, missing/unknown, vulnerable by severity) and the route highlight.
+- **Loading, error and empty states:** separate views for loading, an
+  unreachable backend, API errors, and filters that match nothing.
+
+"Public + sink" with match All returns 0 routes on this data by design: no
+route goes from a public service to a database. The app shows this as an
+empty state ("No routes match"), not as an error.
 
 ## Run locally
 
-Requires Node 20.19+ (or 22.12+).
+### Prerequisites
 
-1. Start the backend. It listens on `http://localhost:3000` and already allows
-   the Vite dev origin `http://localhost:5173` outside production:
+- Node.js 20.19+ or 22.12+ (required by Vite)
+- npm
+- A local copy of the
+  [backend](https://github.com/saadimanar/train-ticket-graph-api)
 
-   ```sh
-   cd ../train-ticket-graph-api
-   npm install
-   npm run dev
-   ```
+### 1. Start the backend
 
-2. Start the frontend:
+The backend listens on `http://localhost:3000`. Outside production it allows
+requests from the Vite dev origin `http://localhost:5173`.
 
-   ```sh
-   npm install
-   cp .env.example .env   # optional; the default already points at localhost:3000
-   npm run dev
-   ```
+```sh
+git clone https://github.com/saadimanar/train-ticket-graph-api.git
+cd train-ticket-graph-api
+npm install
+npm run dev
+```
 
-3. Open <http://localhost:5173>.
+### 2. Start the frontend
 
-If Vite picks another port because 5173 is taken, add that origin to the
+```sh
+npm install
+cp .env.example .env
+npm run dev
+```
+
+`.env` sets `VITE_API_URL`, which defaults to `http://localhost:3000`. Open
+<http://localhost:5173>.
+
+If port 5173 is taken, Vite uses another port. Add that origin to the
 backend's `ALLOWED_ORIGINS`, or the browser will block the requests and the
 app will show "Can't reach the graph API".
 
@@ -60,29 +77,40 @@ app will show "Can't reach the graph API".
 | `npm run typecheck` | Type-check only |
 | `npm run preview` | Serve the production build locally |
 
-## Environment variables
+### Environment variables
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `VITE_API_URL` | `http://localhost:3000` | Base URL of the graph API, without a trailing slash |
 
-Vite inlines `VITE_*` variables at build time, so changing the value requires
-a rebuild (on Vercel, a redeploy).
+## Deployment
 
-## Deploy on Vercel
+The live demo is deployed on Vercel.
 
-1. Import this repository in Vercel. It detects Vite; keep the defaults
+1. Import this repository in Vercel and keep the **Vite** framework preset
    (build command `npm run build`, output directory `dist`).
-2. Under **Settings → Environment Variables**, set `VITE_API_URL` to the
-   deployed backend URL, for example `https://my-graph-api.vercel.app`.
-3. Deploy, and note the frontend URL.
-4. In the **backend** project, add the frontend URL to `ALLOWED_ORIGINS`
-   (comma-separated exact origins, no trailing slash), for example
-   `https://my-graph-frontend.vercel.app`, and redeploy the backend. In
-   production the backend allows no origins by default.
+2. Set `VITE_API_URL` to the backend URL, for example
+   `https://train-ticket-graph-api.vercel.app`, **before** building. Vite bakes
+   `VITE_*` variables into the bundle at build time, so after changing it you
+   must redeploy for the change to take effect.
+3. Add the frontend URL, for example
+   `https://train-ticket-graph-frontend.vercel.app`, to the backend's
+   `ALLOWED_ORIGINS` (comma-separated exact origins, no trailing slash) and
+   redeploy the backend. In production the backend allows no origins by
+   default, so without this every request is blocked by CORS.
 
-Preview deployments get their own URLs, so each one you want to use must be
-added to `ALLOWED_ORIGINS` as well.
+Preview deployments get their own URLs; add any you want to use to
+`ALLOWED_ORIGINS` as well.
+
+## Tech stack
+
+- [Vite](https://vite.dev) 8 with React 19 and TypeScript (strict)
+- [React Flow](https://reactflow.dev) (`@xyflow/react`) for the graph
+- [elkjs](https://github.com/kieler/elkjs) for the layered layout, lazy-loaded
+- [Tailwind CSS](https://tailwindcss.com) 4
+- [Lucide](https://lucide.dev) (`lucide-react`) for icons
+
+No state management or routing library; state lives in React hooks.
 
 ## Project structure
 
@@ -97,7 +125,7 @@ src/
     useFilters.ts    GET /filters
     useRoutes.ts     GET /routes for the selected filters and match mode
   lib/
-    layout.ts        elkjs layered layout (lazy-loaded)
+    layout.ts        elkjs layered layout
     nodeStyle.ts     node kind → icon, shape and colour; severity colours
   components/
     GraphView.tsx    React Flow canvas, controls, minimap
@@ -114,9 +142,3 @@ src/
 Node kinds are interpreted in one place, `src/lib/nodeStyle.ts`. Kinds it does
 not recognise render as a regular service, so new backend kinds do not break
 the graph; add them there to give them their own icon.
-
-## Stack
-
-Vite, React 19, TypeScript (strict), Tailwind CSS 4,
-[`@xyflow/react`](https://reactflow.dev) for the graph, `elkjs` for layout and
-`lucide-react` for icons.
