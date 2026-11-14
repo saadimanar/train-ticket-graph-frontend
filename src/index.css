@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+@import '@xyflow/react/dist/style.css';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --color-canvas: #0b0e14;
+  --color-panel: #11151d;
+  --color-raised: #171c26;
+  --color-line: #1f2633;
+  --color-line-strong: #2b3445;
+  --color-accent: #22d3ee;
+
+  --animate-enter: enter 0.22s ease-out both;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes edge-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: #cbd5e1;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Thin, unobtrusive scrollbars for the side panels. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2b3445 transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── React Flow theme ─────────────────────────────────────────── */
+
+.react-flow {
+  --xy-background-color: var(--color-canvas);
+  --xy-edge-stroke: #3b4658;
+  --xy-edge-stroke-width: 1.25;
+  --xy-minimap-background-color: #0e121a;
+  --xy-minimap-mask-background-color: rgba(8, 10, 15, 0.72);
+  --xy-minimap-mask-stroke-color: #334155;
+  --xy-minimap-mask-stroke-width: 1;
+  --xy-controls-button-background-color: var(--color-panel);
+  --xy-controls-button-background-color-hover: var(--color-raised);
+  --xy-controls-button-color: #94a3b8;
+  --xy-controls-button-color-hover: #e2e8f0;
+  --xy-controls-button-border-color: var(--color-line);
+  --xy-controls-box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+  --xy-attribution-background-color: transparent;
+}
+
+.react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+}
+
+.react-flow__controls-button {
+  width: 30px;
+  height: 30px;
+}
+
+.react-flow__minimap {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+}
+
+.react-flow__attribution {
+  opacity: 0.35;
+}
+
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__edge {
+  pointer-events: none;
+}
+
+.react-flow__edge .react-flow__edge-path {
+  transition:
+    stroke 0.3s ease,
+    opacity 0.3s ease,
+    stroke-width 0.3s ease;
+}
+
+.react-flow__edge.edge-dim .react-flow__edge-path {
+  opacity: 0.1;
+}
+
+.react-flow__edge.edge-highlight .react-flow__edge-path {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  animation: edge-flow 0.7s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.55));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react-flow__edge.edge-highlight .react-flow__edge-path {
+    animation: none;
+  }
+}
